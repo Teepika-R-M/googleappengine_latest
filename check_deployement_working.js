@@ -2,21 +2,15 @@
 
 const express = require('express');
 const mysql = require('promise-mysql');
-const bodyParser = require('body-parser');
 
 const app = express();
 app.set('view engine', 'pug');
 app.enable('trust proxy');
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(bodyParser.raw());
-
-
 // Automatically parse request body as form data.
-//app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({extended: false}));
 // This middleware is available in Express v4.16.0 onwards
-//app.use(express.json());
+app.use(express.json());
 
 // Set Content-Type for all responses for these routes.
 app.use((req, res, next) => {
@@ -138,12 +132,11 @@ app.use(async (req, res, next) => {
 });
 
 
-app.post('/accounts/user', async (req, res) =>  {
+app.get('/', async (req, res) =>  {
 const postObj=req.body
 const userID=postObj.userID
-
   try {
-    const tabsQuery = pool.query("SELECT * FROM banking.accounts where userID=?;",[userID]);
+    const tabsQuery = pool.query("SELECT * FROM banking.accounts;");
         let x = await tabsQuery;
 res.json(x);
 } catch (err) {
@@ -161,12 +154,9 @@ app.get('/check', (req, res) => {
   res.send('Hello World!')
 });
 
-app.post('/accounts', async (req, res) =>  {
+app.get('/users', async (req, res) =>  {
 const postObj=req.body
-console.log("postObj")
-console.log(postObj)
-//const accountNum=995783922 
-const accountNum = postObj.accountNum
+const accountNum=postObj.accountNum
   try {
     const tabsQuery = pool.query("SELECT * FROM banking.accounts where accountNum=?;",[accountNum]);
         let x = await tabsQuery;
@@ -180,109 +170,6 @@ res.json(x);
       )
       .end();
   }
-});
-
-app.post('/accounts/new', async (req, res) =>  {
-  const timestamp = new Date();
-const postObj=req.body
-const userID=postObj.userID
-const accountType=postObj.accountType
-  try {
-    const stmt = 'INSERT INTO banking.accounts (userID,totalBalance,availableBalance,accountType,accountStatus) values (?,0.0,0.0,?,"active")';
-    await pool.query(stmt,[userID,accountType]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully create accounts! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully inserted records').end();
-});
-app.put('/accounts/balance',async (req, res) => {
-const postObj=req.body
-const accountNum=postObj.accountNum
-const balanceType=postObj.balanceType
-const balanceAmount=postObj.balanceAmount
-let stmt = ""
-  try {
-console.log("start");
-if(balanceType=="totalBalance"){
-console.log("if");
- stmt = 'update banking.accounts set totalBalance=? where accountNum=?';
-}
-else{
-console.log("else");
-stmt = 'update banking.accounts set availableBalance=? where accountNum=?';
-}
-    await pool.query(stmt,[balanceAmount,accountNum]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully update accounts balance amount! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully updated records').end();
-});
-
-app.delete('/accounts/existing',async (req, res) => {
-const postObj=req.body
-const accountNum=postObj.accountNum
-  try {
-const stmt = 'delete from banking.accounts where accountNum=?';
-    await pool.query(stmt,[accountNum]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully delete accounts! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully deleted records').end();
-});
-app.put('/accounts/email',async (req, res) => {
-const postObj=req.body
-const email=postObj.email
-const userID=postObj.userID
-  try {
-const stmt = 'update banking.users set email=? where userID=?';
-    await pool.query(stmt,[email,userID]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully update accounts email ID! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully updated records').end();
-});
-
-app.put('/accounts/password',async (req, res) => {
-const postObj=req.body
-const password=postObj.password
-const userID=postObj.userID
-  try {
-const stmt = 'update banking.users set password=? where userID=?';
-    await pool.query(stmt,[password,userID]);
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .send(
-        'Unable to successfully update accounts password! Please check the application logs for more details.'
-      )
-      .end();
-  }
-  res.status(200).send('Successfully updated records').end();
 });
 
 const PORT = process.env.PORT || 8080;
