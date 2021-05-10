@@ -19,27 +19,6 @@ app.use(bodyParser.raw());
 //app.use(express.json());
 
 // Set Content-Type for all responses for these routes.
-
-app.use(function (req, res, next) {
-
-    // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
-    next();
-});
-
-
 app.use((req, res, next) => {
   res.set('Content-Type', 'text/html');
   next();
@@ -164,7 +143,7 @@ const postObj=req.body
 const userID=postObj.userID
 
   try {
-    const tabsQuery = pool.query("select * from accounts where userID=?;",[userID]);
+    const tabsQuery = pool.query("SELECT * FROM banking.accounts where userID=?;",[userID]);
         let x = await tabsQuery;
 res.json(x);
 } catch (err) {
@@ -268,24 +247,24 @@ const stmt = 'delete from banking.accounts where accountNum=?';
   }
   res.status(200).send('Successfully deleted records').end();
 });
-//app.put('/accounts/email',async (req, res) => {
-//const postObj=req.body
-//const email=postObj.email
-//const userID=postObj.userID
-//  try {
-//const stmt = 'update banking.users set email=? where userID=?';
-//    await pool.query(stmt,[email,userID]);
-//  } catch (err) {
-//    console.error(err);
-//    return res
-//      .status(500)
-//      .send(
-//        'Unable to successfully update accounts email ID! Please check the application logs for more details.'
-//      )
-//      .end();
-//  }
-//  res.status(200).send('Successfully updated records').end();
-//});
+app.put('/accounts/email',async (req, res) => {
+const postObj=req.body
+const email=postObj.email
+const userID=postObj.userID
+  try {
+const stmt = 'update banking.users set email=? where userID=?';
+    await pool.query(stmt,[email,userID]);
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .send(
+        'Unable to successfully update accounts email ID! Please check the application logs for more details.'
+      )
+      .end();
+  }
+  res.status(200).send('Successfully updated records').end();
+});
 
 app.put('/accounts/password',async (req, res) => {
 const postObj=req.body
